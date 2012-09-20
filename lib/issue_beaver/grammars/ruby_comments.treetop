@@ -91,7 +91,7 @@ module IssueBeaver
       end
 
       rule mention
-        white? '@' [a-zA-Z]+ white? <Mention> {
+        white '@' [a-zA-Z]+ white? <Mention> {
           def text_value
             elements[2].text_value
           end

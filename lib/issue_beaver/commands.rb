@@ -21,6 +21,7 @@ module IssueBeaver
         runner.send(@command)
       else
         puts "#{@command}: Command not found"
+        runner.help
       end
     end
 
@@ -85,6 +86,10 @@ module IssueBeaver
         issues.each do |issue|
           issue.save
         end
+      end
+
+      def help
+        puts "Available commands: status, diff, commit, help"
       end
 
       private
