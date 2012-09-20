@@ -1,5 +1,4 @@
 require 'treetop'
 
-Dir.glob('./lib/issue_beaver/grammars/*').each do |grammar|
-  Treetop.load grammar
-end
+require './lib/issue_beaver/grammars/ruby_comments'
+Treetop.load './lib/issue_beaver/grammars/ruby_comments.treetop'

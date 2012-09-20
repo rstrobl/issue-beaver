@@ -32,7 +32,8 @@ module IssueBeaver
         Models::GithubIssue.use_repository(Models::GithubIssueRepository.new(
           @config['github']['repo'],
           @config['github']['login'],
-          @config['github']['password'])) 
+          @config['github']['password'],
+          {:labels => @config['github']['labels']})) 
       end
 
       def default_config

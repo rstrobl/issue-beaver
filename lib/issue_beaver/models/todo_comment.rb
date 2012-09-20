@@ -14,7 +14,7 @@ module IssueBeaver
       end
 
       include Shared::AttributesModel
-      ATTRIBUTES = [:title, :body, :begin_line, :file, :created_at, :updated_at]
+      ATTRIBUTES = [:title, :body, :begin_line, :file, :created_at, :updated_at, :assignee]
 
       def initialize(attrs = {})
         @attributes = Hashie::Mash.new(attrs)
@@ -22,7 +22,7 @@ module IssueBeaver
       end
 
       def to_issue_attrs
-        Hashie::Mash.new(attributes.only(:title, :body, :begin_line, :file, :created_at, :updated_at))
+        Hashie::Mash.new(attributes.only(:title, :body, :begin_line, :file, :created_at, :updated_at, :assignee))
       end
     end
 

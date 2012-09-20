@@ -5,12 +5,13 @@ module IssueBeaver
         (comment / non_comment)* {
           def comments
             elements.map{|element|
-              next unless element.respond_to?(:text)
-              text = element.text
+              next unless element.respond_to?(:title)
 
               {
                 'begin_line' => element.begin_line,
-                'title' => text
+                'title' => element.title,
+                'body' => element.body,
+                'assignee' => element.assignee
               }
             }.compact
           end
@@ -26,24 +27,75 @@ module IssueBeaver
       end
 
       rule todo_comment
-        '#' white? 'TODO' ':'? white? (!eoc .)* white? eoc {
-          def label
-            'todo'
-          end
-
-          def text
-            text = elements[-3]
-            text ? text.text_value : nil
-          end
+        todo_comment_title todo_comment_body {
+          def label() todo_comment_title.label end
+          def title() todo_comment_title.text end
+          def assignee() todo_comment_title.assignee end
 
           def begin_line
             parent.text_value.line_of interval.begin
+          end
+
+          def body
+            todo_comment_body.text
+          end
+        }
+      end
+
+      rule todo_comment_title
+        '#' white? 'TODO' ':'? white? comment_line white? eoc {
+          def label() 'todo' end
+
+          def assignee() comment_line.mentions.first end
+
+          def text
+            comment_line.text
+          end
+        }
+      end
+
+      rule todo_comment_body
+        todo_comment_body_line* {
+          def text
+            elements.map(&:text).join("\n") if elements.any?
+          end
+        }
+      end
+
+      rule todo_comment_body_line
+        white? '#' white? comment_line eoc {
+          def text
+            comment_line.text_value
           end
         }
       end
 
       rule normal_comment
-        '#' (!eoc .)* eoc
+        '#' white? comment_line eoc
+      end
+ 
+      # TODO: Big refactor to make this fast
+      rule comment_line
+        (mention / (!eoc .))* {
+          def mentions
+            elements.select {|element|
+              element.kind_of? Mention
+            }.map(&:text_value)
+          end
+          def text
+            elements.reject {|element|
+              element.kind_of? Mention
+            }.map(&:text_value).join("")
+          end
+        }
+      end
+
+      rule mention
+        white? '@' [a-zA-Z]+ white? <Mention> {
+          def text_value
+            elements[2].text_value
+          end
+        }
       end
 
       rule white

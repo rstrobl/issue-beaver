@@ -93,7 +93,8 @@ module IssueBeaver
       end
 
       class Match
-        TITLE_THRESHOLD = 0.1
+        TITLE_THRESHOLD = 0.4
+        BODY_THRESHOLD = 0.9
 
         attr_reader :todo, :issue
         def initialize(todo, issue)
@@ -102,15 +103,24 @@ module IssueBeaver
         end
 
         def sane?
-          title_degree < TITLE_THRESHOLD
+          (title_degree < TITLE_THRESHOLD) ||
+          ((body_degree < BODY_THRESHOLD) && (body_accuracy < 0.1))
         end
 
         def degree
-          title_degree
+          title_degree + (body_degree * 0.25)
         end
 
-        def title_degree
-          Levenshtein.distance(@issue.title, @todo.title).to_f / [1, @issue.title.length, @todo.title.length].max
+        def title_degree() levenshtein(@issue.title, @todo.title) end
+
+        def body_degree() levenshtein(@issue.body, @todo.body) end
+
+        def body_accuracy() 1.0/[@issue.body.to_s.length, @todo.body.to_s.length].min.to_f end
+
+        private
+
+        def levenshtein(a, b)
+          Levenshtein.distance(a.to_s, b.to_s).to_f / [1, a.to_s.length, b.to_s.length].max
         end
       end
     end
