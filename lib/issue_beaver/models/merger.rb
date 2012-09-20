@@ -3,9 +3,9 @@ require 'levenshtein'
 module IssueBeaver
   module Models
     class Merger
-      def initialize(issues = GithubIssue.all)
+      def initialize(issues = GithubIssue.all, todos = TodoComment.all)
         @issues = issues
-        @matcher = Matcher.new(@issues)
+        @matcher = Matcher.new(@issues, todos)
       end
 
       def added
@@ -43,8 +43,9 @@ module IssueBeaver
     end
 
     class Matcher
-      def initialize(issues)
+      def initialize(issues, todos)
         @issue_matcher = IssueMatcher.new(issues)
+        @todos = todos
       end
 
       def matches
@@ -53,15 +54,11 @@ module IssueBeaver
 
       def match!
         matches = {}
-        todos.each do |todo|
+        @todos.each do |todo|
           issue = @issue_matcher.delete(todo)
           matches[todo] ||= issue
         end
         matches
-      end
-
-      def todos
-        @todos ||= TodoComment.all
       end
     end
 
