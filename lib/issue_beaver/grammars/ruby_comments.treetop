@@ -1,0 +1,58 @@
+module IssueBeaver
+  module Grammars
+    grammar RubyComments
+      rule comments
+        (comment / non_comment)* {
+          def comments
+            elements.map{|element|
+              next unless element.respond_to?(:text)
+              text = element.text
+
+              {
+                'begin_line' => element.begin_line,
+                'title' => text
+              }
+            }.compact
+          end
+        }
+      end
+
+      rule non_comment
+        .
+      end
+
+      rule comment
+        todo_comment / normal_comment
+      end
+
+      rule todo_comment
+        '#' white? 'TODO' ':'? white? (!eoc .)* white? eoc {
+          def label
+            'todo'
+          end
+
+          def text
+            text = elements[-3]
+            text ? text.text_value : nil
+          end
+
+          def begin_line
+            parent.text_value.line_of interval.begin
+          end
+        }
+      end
+
+      rule normal_comment
+        '#' (!eoc .)* eoc
+      end
+
+      rule white
+        [ \t]+
+      end
+
+      rule eoc
+        "\n" / !.
+      end
+    end
+  end
+end
