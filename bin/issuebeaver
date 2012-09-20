@@ -1,0 +1,4 @@
+#!/usr/bin/env ruby
+
+require './lib/issue_beaver'
+IssueBeaver::CLI.new(*ARGV).run
