@@ -12,8 +12,12 @@ module IssueBeaver
         merged_issues.select(&:new?)
       end
 
+      def modified
+        merged_issues.select(&:must_update?)
+      end
+
       def changed
-        merged_issues.select(&:changed?)
+        added + modified
       end
 
       def merged_issues
@@ -25,12 +29,13 @@ module IssueBeaver
       def update_issues
         @matcher.matches.each do |todo, issue|
           if issue
-            issue.update_attributes(todo.to_issue_attrs)
-            puts "Updated issue #{issue.title}"
+            if todo.updated_at > issue.updated_at
+              issue.update_attributes(todo.to_issue_attrs)
+            else
+            end
           else
             issue = @issues.new(todo.to_issue_attrs)
             @issues << issue
-            puts "Created issue #{issue.title}"
           end
         end
         @issues

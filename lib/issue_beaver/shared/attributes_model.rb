@@ -26,6 +26,14 @@ module IssueBeaver
             send(:attribute=, key, value)
           end
         end
+
+        def modifier
+          if new?
+            "added"
+          elsif changed?
+            "modified"
+          end
+        end
       end
     end
   end

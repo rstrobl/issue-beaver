@@ -14,7 +14,7 @@ module IssueBeaver
       end
 
       include Shared::AttributesModel
-      ATTRIBUTES = [:title, :body, :begin_line, :file, :created_at]
+      ATTRIBUTES = [:title, :body, :begin_line, :file, :created_at, :updated_at]
 
       def initialize(attrs = {})
         @attributes = Hashie::Mash.new(attrs)
@@ -22,7 +22,7 @@ module IssueBeaver
       end
 
       def to_issue_attrs
-        Hashie::Mash.new(attributes.only(:title, :body, :begin_line, :file, :created_at))
+        Hashie::Mash.new(attributes.only(:title, :body, :begin_line, :file, :created_at, :updated_at))
       end
     end
 
@@ -45,7 +45,10 @@ module IssueBeaver
         files.each do |file|
           content = File.read(file)
           new_todos = parser.parse(content).comments.map{|comment| 
-            new_todo(comment.merge('file' => relative_path(file), 'created_at' => File.ctime(file)))
+            new_todo( comment.merge('file' => relative_path(file),
+                                    'created_at' => File.ctime(file),
+                                    'updated_at' => File.ctime(file)
+                                    ))
           }
           todos << new_todos
         end

@@ -1,4 +1,5 @@
 require 'yaml'
+require 'time-lord'
 
 module IssueBeaver
   class CLI
@@ -60,45 +61,77 @@ module IssueBeaver
         end
       end
 
+      def status
+        issues = Models::Merger.new.changed
+        if issues.empty?
+          puts "Nothing new"
+        else
+          puts _list_status(issues)
+        end
+      end
+
       def diff
-        merger = Models::Merger.new
-        added, changed = merger.added, merger.changed #, merger.deleted
-        puts "New todos:", _list_todos(added) unless added.empty?
-        puts "Changed todos:", _list_todos_with_changes(changed) unless changed.empty?
-        # puts "Deleted todos:", _list_todos(deleted) unless deleted.empty?
-        puts "Nothing new" if (added + changed).empty?
+        issues = Models::Merger.new.changed
+        if issues.empty?
+          puts "Nothing new"
+        else
+          puts _list_diff(issues)
+        end
       end
 
-      def save
-        LocalTodoFinder.new(_pattern).commit
-      end
-
-      def debug
-        require 'ruby-debug'
-        debugger
-        "Here is the debugger"
-      end
-
-      def list_remote
-        # _list_todos RemoteTodoRepository.new(@args['github']['repo']).all
+      def commit
+        issues = Models::Merger.new.changed
+        issues.each do |issue|
+          issue.save
+        end
       end
 
       private
 
-      def _pattern
-        "{#{@args['dirs'].join(',')}}/#{@args['files']}"
+
+      def max_length(list, attr)
+        list.map(&attr).max{ |a,b| a.to_s.length <=> b.to_s.length}.to_s.length
       end
 
-      def _list_todos(todos)
+      def format_status(todos, todo)
+        mod = sprintf "%#{max_length(todos, :modifier)}s   ", todo.modifier
+        file = sprintf "%-#{max_length(todos, :file)}s", todo.file
+        begin_line = sprintf "%-#{max_length(todos, :begin_line)}s  ", todo.begin_line
+        title = sprintf "%-#{max_length(todos, :title) + 8}s", %Q{"#{todo.title}"}
+        "#      #{mod}#{title} #{file}:#{begin_line}"
+      end
+
+
+      def format_diff(todos, todo)
+        mod = sprintf "%#{max_length(todos, :modifier)}s   ", todo.modifier
+        file = sprintf "%-#{max_length(todos, :file)}s", todo.file
+        begin_line = sprintf "%-#{max_length(todos, :begin_line)}s  ", todo.begin_line
+        title = sprintf "%-#{max_length(todos, :title) + 8}s", %Q{"#{todo.title}"}
+        updated_at = "(#{todo.updated_at.ago_in_words})  "
+        attrs = sprintf "%-#{max_length(todos, :changed_attributes_for_update)}s", todo.changed_attributes_for_update
+        "#      #{mod}#{title} at #{file}:#{begin_line}#{updated_at}#{attrs}"
+      end
+
+      def _list_diff(todos)
         todos.map { |todo|
-          "#{todo.file}:#{todo.begin_line}: #{todo.title} (#{todo.created_at})"
+          format_diff(todos, todo)
         }.join("\n")
       end
 
-      def _list_todos_with_changes(todos)
+      def _list_status(todos)
+        todos.map {|todo|
+          format_status(todos, todo)
+          }.join("\n")
+        end
+
+      def _list_todos(todos, all_todos = todos)
+        todos.map { |todo| format_line(all_todos, todo) }.join("\n")
+      end
+
+      def _list_todos_with_changes(todos, all_todos = todos)
+
         todos.map { |todo|
-          head = "#{todo.file}:#{todo.begin_line}: #{todo.title} (#{todo.created_at})"
-          # debug; "hello"
+          head = format_line(all_todos, todo)
           lines = todo.changes.only(:title).map{|attr, change|
             "#{attr}: #{change[0]} => #{change[1]}"
           }

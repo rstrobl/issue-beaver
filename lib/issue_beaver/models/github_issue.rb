@@ -1,6 +1,7 @@
 require 'active_support/core_ext' # Needed for delegate
 require 'octokit'
 require 'time'
+require 'hashie'
 
 module IssueBeaver
   module Models
@@ -14,7 +15,7 @@ module IssueBeaver
 
 
       include Shared::AttributesModel
-      ATTRIBUTES = [:number, :state, :title, :body, :file, :begin_line, :created_at]      
+      ATTRIBUTES = [:number, :state, :title, :body, :file, :begin_line, :created_at, :updated_at]      
 
       def closed?() state == "closed" end
 
@@ -24,15 +25,21 @@ module IssueBeaver
 
       def persisted?() !new? && !changed? end
 
+      def changed_attributes_for_update
+        Hashie::Mash.new(changed_attributes).only(:title)
+      end
+
+      def must_update?() changed_attributes_for_update.any? end
 
       def initialize(attrs = {})
         self.attributes = attrs
         ATTRIBUTES.each do |attr| @attributes[attr] ||= nil end
         self.created_at = Time.parse(created_at) if created_at.kind_of?(String)
+        self.updated_at = Time.parse(updated_at) if updated_at.kind_of?(String)
       end
 
       def update_attributes_with_limit(attrs)
-        update_attributes_without_limit(attrs.only(:title))
+        update_attributes_without_limit(attrs.only(:title, :updated_at))
       end
       alias_method_chain :update_attributes, :limit
 
