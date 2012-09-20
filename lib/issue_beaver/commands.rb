@@ -2,7 +2,7 @@ require 'yaml'
 
 module IssueBeaver
   class CLI
-    def initialize(args)
+    def initialize(*args)
       config_file = ".issuebeaver.yml"
       @config = default_config
 

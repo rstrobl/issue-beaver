@@ -67,7 +67,7 @@ module IssueBeaver
 
       def update(number, attrs)
         sync_cache(
-          @client.update_issue(@repo, attrs.number, attrs.title, attrs.body, attrs.only(:state, :labels))
+          @client.update_issue(@repo, number, attrs.title, attrs.body, attrs.only(:state, :labels))
         )
       end
 
