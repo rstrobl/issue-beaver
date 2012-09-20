@@ -27,9 +27,10 @@ module IssueBeaver
     end
 
     class TodoCommentRepository
-      def initialize(dirs, files)
-        file_pattern = "{#{dirs.join(',')}}/#{files}"
-        @files = Dir.glob(File.expand_path(file_pattern))
+      def initialize(dir, files)
+        @dir = dir
+        file_pattern = "{#{[@dir].map{|dir|File.expand_path(dir)}.join(',')}}/#{files}"
+        @files = Dir.glob(file_pattern)
       end
 
       def all
@@ -62,7 +63,7 @@ module IssueBeaver
 
       def relative_path(file)
         Pathname.new(File.absolute_path(file)).
-          relative_path_from(Pathname.pwd).to_s
+          relative_path_from(Pathname.new(File.absolute_path(@dir))).to_s
       end
     end
   end
