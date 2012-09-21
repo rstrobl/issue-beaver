@@ -13,31 +13,30 @@ module IssueBeaver
     end
 
     def find(*args)
-      conf = config
-      conf['dir'] = args[1] if args[1]
-      issues = todo_comments.all.map{|todo| github_issues(conf).new(todo.to_issue_attrs)}
-      if issues.empty?
-        puts "Nothing found"
+      config['dir'] = args[1] if args[1]
+      issues = todo_comments.all.lazy_map{|todo| github_issues(config).new(todo.to_issue_attrs)}
+      if issues.any?
+        _list_status(issues)
       else
-        puts _list_status(issues)
+        puts "Nothing found"
       end
     end
 
     def status(*args)
       issues = merger(github_issues.all, todo_comments.all).changed
-      if issues.empty?
-        puts "Nothing new"
+      if issues.any?
+        _list_status(issues)
       else
-        puts _list_status(issues)
+        puts "Nothing new"
       end
     end
 
     def diff(*args)
       issues = merger(github_issues.all, todo_comments.all).changed
-      if issues.empty?
-        puts "Nothing new"
+      if issues.any?
+        _list_diff(issues)
       else
-        puts _list_diff(issues)
+        puts "Nothing new"
       end
     end
 
@@ -54,20 +53,24 @@ module IssueBeaver
 
     private
 
-    def unknown(command, *args, &block)
+    def unknown(command = "", *args, &block)
       puts "#{command}: Command not found"
       help
     end
 
-    def max_length(list, attr)
-      list.map(&attr).max{ |a,b| a.to_s.length <=> b.to_s.length}.to_s.length
+    def max_length(list, attr, elem = nil)
+      if elem
+        elem.send(attr).to_s.length
+      else
+        list.map(&attr).max{ |a,b| a.to_s.length <=> b.to_s.length}.to_s.length
+      end
     end
 
     def format_status(todos, todo)
-      mod = sprintf "%#{max_length(todos, :modifier)}s   ", todo.modifier
-      file = sprintf "%#{max_length(todos, :file)}s", todo.file
-      begin_line = sprintf "%-#{max_length(todos, :begin_line)}s  ", todo.begin_line
-      title = sprintf "%-#{max_length(todos, :title) + 8}s", todo.title
+      mod = sprintf "%#{max_length(todos, :modifier, todo)}s   ", todo.modifier
+      file = sprintf "%#{max_length(todos, :file, todo)}s", todo.file
+      begin_line = sprintf "%-#{max_length(todos, :begin_line, todo)}s  ", todo.begin_line
+      title = sprintf "%-#{max_length(todos, :title, todo) + 8}s", todo.title
       "#      #{mod}#{title} #{file}:#{begin_line}"
     end
 
@@ -83,15 +86,15 @@ module IssueBeaver
     end
 
     def _list_diff(todos)
-      todos.map { |todo|
-        format_diff(todos, todo)
-      }.join("\n")
+      todos.map do |todo|
+        puts format_diff(todos, todo)
+      end
     end
 
     def _list_status(todos)
-      todos.map {|todo|
-        format_status(todos, todo)
-      }.join("\n")
+      todos.each do |todo|
+        puts format_status(todos, todo)
+      end
     end
 
     def todo_comments(config = config)

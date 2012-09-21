@@ -34,27 +34,27 @@ module IssueBeaver
       end
 
       def all
-        @todos ||= scan_files(@files)
+        @todos ||= enum_scanned_files(@files)
       end
 
       private
 
-      def scan_files(files)
-        todos = []
-        parser = Grammars::RubyCommentsParser.new
+      def enum_scanned_files(files)
+        Base::LazyCollection.new do |yielder|
+          todos = []
+          parser = Grammars::RubyCommentsParser.new
         
-        files.each do |file|
-          content = File.read(file)
-          new_todos = parser.parse(content).comments.map{|comment| 
-            new_todo( comment.merge('file' => relative_path(file),
-                                    'created_at' => File.ctime(file),
-                                    'updated_at' => File.ctime(file)
-                                    ))
-          }
-          todos << new_todos
+          files.each do |file|
+            content = File.read(file)
+            parser.parse(content).comments.each{|comment| 
+              yielder << new_todo(
+                comment.merge('file' => relative_path(file),
+                              'created_at' => File.ctime(file),
+                              'updated_at' => File.ctime(file)
+                              ))
+            }
+          end
         end
-
-        todos.flatten
       end
 
       def new_todo(attrs)
