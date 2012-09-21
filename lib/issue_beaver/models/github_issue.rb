@@ -10,8 +10,12 @@ module IssueBeaver
         @repository = repository
 
         class << self
-          delegate :all, :update, :create, :default_attributes, :first, to: :@repository
+          delegate :update, :create, :default_attributes, :first, to: :@repository
         end
+      end
+
+      def self.all
+        Shared::ModelCollection.new(self, @repository.all.lazy_map{|attrs| new(attrs.dup)})
       end
 
 
@@ -73,8 +77,7 @@ module IssueBeaver
       attr_reader :default_attributes
 
       def all
-        @issues ||= @client.list_issues(@repo)
-        Shared::ModelCollection.new(GithubIssue, @issues.map{|attrs| new_issue(attrs.dup)})
+        @issues ||= Shared::LazyCollection.new(@client.list_issues(@repo))
       end
 
       def first
@@ -94,9 +97,6 @@ module IssueBeaver
       end
 
       private
-      def new_issue(attributes)
-        GithubIssue.new(attributes)
-      end
 
       def sync_cache
         new_attrs = begin

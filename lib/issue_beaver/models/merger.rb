@@ -49,35 +49,32 @@ module IssueBeaver
       end
 
       def matches
-        @matches ||= match!
-      end
-
-      def match!
-        matches = {}
-        @todos.each do |todo|
-          issue = @issue_matcher.delete(todo)
-          matches[todo] ||= issue
-        end
-        matches
+        @matches ||=
+          Enumerator.new do |yielder|
+            @todos.each do |todo|
+              match = @issue_matcher.find_and_check_off(todo)
+              yielder << [match.todo, match.issue]
+            end
+          end
       end
     end
 
     class IssueMatcher
       def initialize(issues)
-        @issues = issues.dup
+        @issues = issues.to_a
       end
 
       # Won't match the same issue twice for two different todos
-      def delete(todo)
-        find(todo).tap do |issue|
-          @issues.delete(issue) unless issue.nil?
+      def find_and_check_off(todo)
+        find(todo).tap do |match|
+          @issues.delete(match.issue) if match
         end
       end
 
       def find(todo)
         best_match = all_matches(todo).sort_by(&:degree).first
         if best_match && best_match.sane?
-          best_match.issue
+          best_match
         else
           nil
         end
