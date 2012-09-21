@@ -1,5 +1,5 @@
 module IssueBeaver
-  module Base
+  module Shared
     class LazyCollection < Enumerator
       def lazy_select(&block)
         Enumerator.new do |yielder|

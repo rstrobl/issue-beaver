@@ -40,7 +40,7 @@ module IssueBeaver
       private
 
       def enum_scanned_files(files)
-        Base::LazyCollection.new do |yielder|
+        Shared::LazyCollection.new do |yielder|
           todos = []
           parser = Grammars::RubyCommentsParser.new
         
