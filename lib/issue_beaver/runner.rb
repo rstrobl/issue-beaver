@@ -104,8 +104,8 @@ module IssueBeaver
     def todo_comments(config = config)
       Models::TodoComment.use_repository(Models::TodoCommentRepository.new(
         repo(config).root_dir,
-        config['dir'],
-        config['files']))
+        repo(config).files(config['dir'])
+        ))
       Models::TodoComment
     end
 
@@ -147,7 +147,6 @@ module IssueBeaver
     DEFAULT_CONFIG =
       {
         'dir' => '.',
-        'files' => '**/**.rb',
         'github' => {
           'repo' => 'remote.origin',
           'labels' => ['todo']

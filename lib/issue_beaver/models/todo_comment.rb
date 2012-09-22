@@ -29,11 +29,9 @@ module IssueBeaver
     end
 
     class TodoCommentRepository
-      def initialize(root_dir, dir, files)
+      def initialize(root_dir, files)
         @root_dir = root_dir
-        @dir = dir
-        file_pattern = "{#{[@dir].map{|dir|File.expand_path(dir)}.join(',')}}/#{files}"
-        @files = Dir.glob(file_pattern)
+        @files = files
       end
 
       def all
@@ -41,8 +39,6 @@ module IssueBeaver
       end
 
       private
-      
-      # TODO: Respect .gitignore for current repository when scanning for files
 
       # TODO: Allow individual TODOs to follow right after each other
       def enum_scanned_files(files)

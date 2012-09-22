@@ -22,6 +22,10 @@ module IssueBeaver
         github_repo
       end
 
+      def files(dir)
+        IO.popen(%Q{cd "#{@root_dir}" && git ls-files "#{dir}"}).lazy.memoizing.map(&:chomp).lazy
+      end
+
       private
       def discover_root_dir(dir)
         cd = dir
