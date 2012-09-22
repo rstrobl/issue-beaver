@@ -76,12 +76,12 @@ module IssueBeaver
 
 
     def format_diff(todos, todo)
-      mod = sprintf "%#{max_length(todos, :modifier)}s   ", todo.modifier
-      file = sprintf "%#{max_length(todos, :file)}s", todo.file
-      begin_line = sprintf "%-#{max_length(todos, :begin_line)}s  ", todo.begin_line
-      title = sprintf "%-#{max_length(todos, :title) + 8}s", todo.title
+      mod = sprintf "%#{max_length(todos, :modifier, todo)}s   ", todo.modifier
+      file = sprintf "%#{max_length(todos, :file, todo)}s", todo.file
+      begin_line = sprintf "%-#{max_length(todos, :begin_line, todo)}s  ", todo.begin_line
+      title = sprintf "%-#{max_length(todos, :title, todo) + 8}s", todo.title
       updated_at = "(#{todo.updated_at.ago_in_words})  "
-      attrs = sprintf "%-#{max_length(todos, :changed_attributes_for_update)}s", todo.changed_attributes_for_update
+      attrs = sprintf "%-#{max_length(todos, :changed_attributes_for_update, todo)}s", todo.changed_attributes_for_update
       "#      #{mod}#{title} at #{file}:#{begin_line}#{updated_at}#{attrs}"
     end
 
