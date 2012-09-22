@@ -23,6 +23,7 @@ module IssueBeaver
     end
 
     def status(*args)
+      config['dir'] = args[1] if args[1]
       issues = merger(github_issues.all, todo_comments.all).changed
       if issues.any?
         _list_status(issues)
@@ -32,6 +33,7 @@ module IssueBeaver
     end
 
     def diff(*args)
+      config['dir'] = args[1] if args[1]
       issues = merger(github_issues.all, todo_comments.all).changed
       if issues.any?
         _list_diff(issues)
@@ -41,6 +43,7 @@ module IssueBeaver
     end
 
     def commit(*args)
+      config['dir'] = args[1] if args[1]
       issues = merger(github_issues.all, todo_comments.all).changed
       issues.each do |issue|
         issue.save
