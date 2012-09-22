@@ -14,6 +14,7 @@ module IssueBeaver
 
     def find(*args)
       config['dir'] = args[1] if args[1]
+
       issues = todo_comments.all.map{|todo| github_issues(config).new(todo.to_issue_attrs)}
       if issues.any?
         _list_status(issues)
@@ -102,6 +103,7 @@ module IssueBeaver
 
     def todo_comments(config = config)
       Models::TodoComment.use_repository(Models::TodoCommentRepository.new(
+        repo(config).root_dir,
         config['dir'],
         config['files']))
       Models::TodoComment
@@ -109,15 +111,23 @@ module IssueBeaver
 
     def github_issues(config = config)
       Models::GithubIssue.use_repository(Models::GithubIssueRepository.new(
-        config['github']['repo'],
+        repo(config).slug,
         config['github']['login'],
         config['github']['password'],
         {:labels => config['github']['labels']})) 
       Models::GithubIssue
     end
 
+    def repo(config = config)
+      @repo ||= Models::Git.new(config['dir'], config['github']['repo'])
+    end
+
     def merger(a, b)
       @merger ||= Models::Merger.new(a, b)
+    end
+
+    def git_repo(config = config)
+      repo = Grit::Repo.new(config['dir'])
     end
 
     def config
@@ -129,6 +139,8 @@ module IssueBeaver
         if File.readable?(config_file)
           config.merge!(YAML.load(File.read(config_file)))
         end
+
+        config
       end
     end
 
@@ -137,7 +149,7 @@ module IssueBeaver
         'dir' => '.',
         'files' => '**/**.rb',
         'github' => {
-          'repo' => '',
+          'repo' => 'remote.origin',
           'labels' => ['todo']
         }
       }

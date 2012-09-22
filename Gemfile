@@ -6,8 +6,9 @@ gem 'activemodel'
 gem 'levenshtein'
 gem 'hashie'
 gem 'time-lord'
-gem "enumerable-lazy", "~> 0.0.1"
+gem 'enumerable-lazy', '~> 0.0.1'
 gem 'enumerator-memoizing'
+gem 'grit'
 
 group :test do
   gem 'rspec'
