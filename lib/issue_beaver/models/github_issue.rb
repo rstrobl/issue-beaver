@@ -2,6 +2,7 @@ require 'active_support/core_ext' # Needed for delegate
 require 'octokit'
 require 'time'
 require 'hashie'
+require 'enumerable/lazy'
 
 module IssueBeaver
   module Models
@@ -15,7 +16,7 @@ module IssueBeaver
       end
 
       def self.all
-        Shared::ModelCollection.new(self, @repository.all.lazy_map{|attrs| new(attrs.dup)})
+        Shared::ModelCollection.new(self, @repository.all.map{|attrs| new(attrs.dup)})
       end
 
 
@@ -77,7 +78,11 @@ module IssueBeaver
       attr_reader :default_attributes
 
       def all
-        @issues ||= Shared::LazyCollection.new(@client.list_issues(@repo))
+        @issues ||= Enumerator.new do |y|
+          @client.list_issues(@repo).each do |i|
+            y << i
+          end
+        end.memoizing.lazy
       end
 
       def first

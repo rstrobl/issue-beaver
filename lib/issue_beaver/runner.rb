@@ -14,7 +14,7 @@ module IssueBeaver
 
     def find(*args)
       config['dir'] = args[1] if args[1]
-      issues = todo_comments.all.lazy_map{|todo| github_issues(config).new(todo.to_issue_attrs)}
+      issues = todo_comments.all.map{|todo| github_issues(config).new(todo.to_issue_attrs)}
       if issues.any?
         _list_status(issues)
       else
@@ -86,7 +86,7 @@ module IssueBeaver
     end
 
     def _list_diff(todos)
-      todos.map do |todo|
+      todos.each do |todo|
         puts format_diff(todos, todo)
       end
     end
@@ -114,7 +114,7 @@ module IssueBeaver
     end
 
     def merger(a, b)
-      @merger ||= Models::Merger.new(a)
+      @merger ||= Models::Merger.new(a, b)
     end
 
     def config

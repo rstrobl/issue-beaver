@@ -2,6 +2,8 @@ require 'pathname'
 require 'active_support/core_ext' # Needed for delegate
 require 'active_model'
 require 'hashie'
+require 'enumerable/lazy'
+require 'enumerator/memoizing'
 
 module IssueBeaver
   module Models
@@ -34,13 +36,13 @@ module IssueBeaver
       end
 
       def all
-        @todos ||= enum_scanned_files(@files)
+        @todos ||= enum_scanned_files(@files).memoizing.lazy
       end
 
       private
 
       def enum_scanned_files(files)
-        Shared::LazyCollection.new do |yielder|
+        Enumerator.new do |yielder|
           todos = []
           parser = Grammars::RubyCommentsParser.new
         

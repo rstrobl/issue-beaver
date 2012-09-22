@@ -3,42 +3,35 @@ require 'levenshtein'
 module IssueBeaver
   module Models
     class Merger
-      def initialize(issues = GithubIssue.all, todos = TodoComment.all)
+      def initialize(issues, todos)
         @issues = issues
         @matcher = Matcher.new(@issues, todos)
       end
 
       def added
-        merged_issues.select(&:new?)
+        @added ||= merged_issues.select(&:new?)
       end
 
       def modified
-        merged_issues.select(&:must_update?)
+        @modified ||= merged_issues.select(&:must_update?)
       end
 
       def changed
-        added + modified
+        @changed ||= merged_issues.select{|e| e.must_update? || e.new? }
       end
 
       def merged_issues
-        @merged_issues ||= update_issues
-      end
-
-      private
-
-      def update_issues
-        @matcher.matches.each do |todo, issue|
+        @merged_issues ||=
+        @matcher.matches.map do |todo, issue|
           if issue
             if todo.updated_at > issue.updated_at
               issue.update_attributes(todo.to_issue_attrs)
-            else
             end
           else
             issue = @issues.new(todo.to_issue_attrs)
-            @issues << issue
           end
+          issue
         end
-        @issues
       end
     end
 
@@ -53,21 +46,23 @@ module IssueBeaver
           Enumerator.new do |yielder|
             @todos.each do |todo|
               match = @issue_matcher.find_and_check_off(todo)
-              yielder << [match.todo, match.issue]
+              issue = match ? match.issue : nil
+              yielder << [todo, issue]
             end
-          end
+          end.memoizing.lazy
       end
     end
 
     class IssueMatcher
       def initialize(issues)
-        @issues = issues.to_a
+        @issues = issues
+        @found_issues = []
       end
 
       # Won't match the same issue twice for two different todos
       def find_and_check_off(todo)
         find(todo).tap do |match|
-          @issues.delete(match.issue) if match
+          @found_issues.push match.issue if match
         end
       end
 
@@ -83,7 +78,8 @@ module IssueBeaver
       private
 
       def all_matches(todo)
-        @issues.map{|issue| Match.new(todo, issue) }
+        @issues.reject{|issue| @found_issues.include? issue}.
+                map{|issue| Match.new(todo, issue) }
       end
 
       class Match
