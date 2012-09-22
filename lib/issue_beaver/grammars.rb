@@ -1,4 +1,4 @@
 require 'treetop'
 
-require './lib/issue_beaver/grammars/ruby_comments'
-Treetop.load './lib/issue_beaver/grammars/ruby_comments.treetop'
+require 'issue_beaver/grammars/ruby_comments'
+Treetop.load File.expand_path('../grammars/ruby_comments.treetop', __FILE__)

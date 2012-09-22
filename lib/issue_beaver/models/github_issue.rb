@@ -78,11 +78,14 @@ module IssueBeaver
       attr_reader :default_attributes
 
       def all
-        @issues ||= Enumerator.new do |y|
-          @client.list_issues(@repo).each do |i|
-            y << i
-          end
-        end.memoizing.lazy
+        @fetched_issues ||=
+          Enumerator.new do |y|
+            @client.list_issues(@repo).each do |i|
+              y << i
+            end
+          end.memoizing.lazy
+        @local_issues ||= []
+        @issues ||= @fetched_issues.merge_right(@local_issues, :number).lazy
       end
 
       def first
@@ -110,12 +113,7 @@ module IssueBeaver
           puts "Failed to save issue (Check if there are invalid assignees or labels)"
           return nil
         end
-        idx = @issues.find_index{|issue| issue.number == new_attrs.number}
-        if idx
-          @issues[idx] = new_attrs
-        else
-          @issues << new_attrs
-        end
+        @local_issues << new_attrs
         new_attrs
       end
     end
