@@ -19,19 +19,6 @@ module Enumerable
 
   # The left enumerator is accessed first
   def merge_left(other_enum, id_method = nil)
-    Enumerator.new do |yielder|
-      yielded_ids = []
-
-      self.each do |x|
-        id = id_method ? x.send(id_method) : x
-        yielded_ids << id
-        yielder << x
-      end
-
-      other_enum.each do |x|
-        id = id_method ? x.send(id_method) : x
-        yielder << x unless yielded_ids.include? id
-      end
-    end
+    other_enum.merge_right(self, id_method)
   end
 end
