@@ -16,7 +16,7 @@ module IssueBeaver
 
 
     def find(*args)
-      config['dir'] = args[1] if args[1]
+      config['dir'] = dir(args[1]) if args[1]
 
       if todo_comments.all.any?
         _list_status(todo_comments.all)
@@ -27,7 +27,7 @@ module IssueBeaver
 
 
     def status(*args)
-      config['dir'] = args[1] if args[1]
+      config['dir'] = dir(args[1]) if args[1]
       issues = merger(github_issues.all, todo_comments.all).changed
       if issues.any?
         _list_status(issues)
@@ -38,7 +38,7 @@ module IssueBeaver
 
 
     def diff(*args)
-      config['dir'] = args[1] if args[1]
+      config['dir'] = dir(args[1]) if args[1]
       issues = merger(github_issues.all, todo_comments.all).changed
       if issues.any?
         _list_diff(issues)
@@ -49,7 +49,7 @@ module IssueBeaver
 
 
     def commit(*args)
-      config['dir'] = args[1] if args[1]
+      config['dir'] = dir(args[1]) if args[1]
       issues = merger(github_issues.all, todo_comments.all).changed
       issues.each do |issue|
         issue.save
@@ -159,6 +159,11 @@ module IssueBeaver
 
         config
       end
+    end
+
+
+    def dir(path)
+      File.absolute_path(path)
     end
 
 

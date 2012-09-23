@@ -25,6 +25,9 @@ module IssueBeaver
       end
 
 
+      # TODO: Detect removed TODO comments and close Issue on Github
+      # Can probably be done by looking up the git history of a file.
+
       def merged_issues
         @merged_issues ||=
         @matcher.matches.map do |todo, issue|
@@ -138,6 +141,6 @@ module IssueBeaver
       end
 
     end
-    
+
   end
 end

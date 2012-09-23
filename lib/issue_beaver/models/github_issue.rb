@@ -14,7 +14,7 @@ module IssueBeaver
       end
 
 
-      def self.repo_name() @repository.repo end
+      def self.repo_name() @repository.repo if @repository end
 
 
       def self.all

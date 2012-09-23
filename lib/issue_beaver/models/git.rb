@@ -40,7 +40,8 @@ module IssueBeaver
 
 
       def files(dir)
-        IO.popen(%Q{cd "#{@root_dir}" && git ls-files "#{dir}"}).lazy.memoizing.map(&:chomp).lazy
+        IO.popen(%Q{cd "#{@root_dir}" && git ls-files "#{dir}"}).lazy.memoizing.
+          map(&:chomp).map{|file| File.absolute_path(file, @root_dir) }.lazy
       end
 
 
