@@ -25,10 +25,10 @@ module IssueBeaver
         @matcher.matches.map do |todo, issue|
           if issue
             if todo.updated_at > issue.updated_at
-              issue.update_attributes(todo.to_issue_attrs)
+              issue.update_attributes(todo.attributes)
             end
           else
-            issue = @issues.new(todo.to_issue_attrs)
+            issue = todo
           end
           issue
         end

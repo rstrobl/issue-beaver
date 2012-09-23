@@ -7,28 +7,7 @@ require 'enumerator/memoizing'
 
 module IssueBeaver
   module Models
-    class TodoComment
-      def self.use_repository(repository)
-        @repository = repository
-        class << self
-          delegate :all, to: :@repository
-        end
-      end
-
-      include Shared::AttributesModel
-      ATTRIBUTES = [:title, :body, :begin_line, :file, :created_at, :updated_at, :assignee]
-
-      def initialize(attrs = {})
-        @attributes = Hashie::Mash.new(attrs)
-        ATTRIBUTES.each do |attr| @attributes[attr] ||= nil end
-      end
-
-      def to_issue_attrs
-        Hashie::Mash.new(attributes.only(:title, :body, :begin_line, :file, :created_at, :updated_at, :assignee))
-      end
-    end
-
-    class TodoCommentRepository
+    class TodoComments
       def initialize(root_dir, files)
         @root_dir = root_dir
         @files = files
@@ -40,7 +19,7 @@ module IssueBeaver
 
       private
 
-      # TODO: Allow individual TODOs to follow right after each other
+      # TODO: Allow individual TODOs to follow right after each other without newline in between
       def enum_scanned_files(files)
         Enumerator.new do |yielder|
           todos = []
@@ -60,7 +39,7 @@ module IssueBeaver
       end
 
       def new_todo(attrs)
-        TodoComment.new(attrs)
+        GithubIssue.new_from_todo(attrs)
       end
 
       def relative_path(file)

@@ -15,9 +15,8 @@ module IssueBeaver
     def find(*args)
       config['dir'] = args[1] if args[1]
 
-      issues = todo_comments.all.map{|todo| github_issues(config).new(todo.to_issue_attrs)}
-      if issues.any?
-        _list_status(issues)
+      if todo_comments.all.any?
+        _list_status(todo_comments.all)
       else
         puts "Nothing found"
       end
@@ -102,11 +101,11 @@ module IssueBeaver
     end
 
     def todo_comments(config = config)
-      Models::TodoComment.use_repository(Models::TodoCommentRepository.new(
+      @todo_comments ||=
+      Models::TodoComments.new(
         repo(config).root_dir,
         repo(config).files(config['dir'])
-        ))
-      Models::TodoComment
+        )
     end
 
     def github_issues(config = config)
