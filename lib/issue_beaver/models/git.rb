@@ -3,6 +3,7 @@ require 'grit'
 module IssueBeaver
   module Models
     class Git
+
       def initialize(dir, repo_name)
         @root_dir = discover_root_dir(dir)
         @git = Grit::Repo.new(@root_dir)
@@ -10,6 +11,7 @@ module IssueBeaver
       end
 
       attr_reader :slug, :root_dir
+
 
       def discover_github_repo(repo_name)
         github_repo = nil
@@ -22,11 +24,14 @@ module IssueBeaver
         github_repo
       end
 
+
       def files(dir)
         IO.popen(%Q{cd "#{@root_dir}" && git ls-files "#{dir}"}).lazy.memoizing.map(&:chomp).lazy
       end
 
+
       private
+
       def discover_root_dir(dir)
         cd = dir
         loop do
@@ -37,6 +42,7 @@ module IssueBeaver
         end
         return nil
       end
+      
     end
   end
 end

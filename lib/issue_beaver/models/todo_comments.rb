@@ -8,14 +8,17 @@ require 'enumerator/memoizing'
 module IssueBeaver
   module Models
     class TodoComments
+
       def initialize(root_dir, files)
         @root_dir = root_dir
         @files = files
       end
 
+
       def all
         @todos ||= enum_scanned_files(@files).memoizing.lazy
       end
+
 
       private
 
@@ -38,14 +41,17 @@ module IssueBeaver
         end
       end
 
+
       def new_todo(attrs)
         GithubIssue.new_from_todo(attrs)
       end
+
 
       def relative_path(file)
         Pathname.new(File.absolute_path(file)).
           relative_path_from(Pathname.new(File.absolute_path(@root_dir))).to_s
       end
+
     end
   end
 end

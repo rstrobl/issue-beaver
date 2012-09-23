@@ -3,7 +3,9 @@ require 'time-lord'
 
 module IssueBeaver
   class Runner
+
     COMMANDS = %w(find status diff commit help)
+
     def self.run(*args)
       command = args[0]
       runner = self.new
@@ -11,6 +13,7 @@ module IssueBeaver
       command = "unknown" unless COMMANDS.include? command
       runner.send(command, *args)
     end
+
 
     def find(*args)
       config['dir'] = args[1] if args[1]
@@ -22,6 +25,7 @@ module IssueBeaver
       end
     end
 
+
     def status(*args)
       config['dir'] = args[1] if args[1]
       issues = merger(github_issues.all, todo_comments.all).changed
@@ -31,6 +35,7 @@ module IssueBeaver
         puts "Nothing new"
       end
     end
+
 
     def diff(*args)
       config['dir'] = args[1] if args[1]
@@ -42,6 +47,7 @@ module IssueBeaver
       end
     end
 
+
     def commit(*args)
       config['dir'] = args[1] if args[1]
       issues = merger(github_issues.all, todo_comments.all).changed
@@ -50,9 +56,11 @@ module IssueBeaver
       end
     end
 
+
     def help
       puts "Available commands: #{COMMANDS.join(", ")}"
     end
+
 
     private
 
@@ -61,6 +69,7 @@ module IssueBeaver
       help
     end
 
+
     def max_length(list, attr, elem = nil)
       if elem
         elem.send(attr).to_s.length
@@ -68,6 +77,7 @@ module IssueBeaver
         list.map(&attr).max{ |a,b| a.to_s.length <=> b.to_s.length}.to_s.length
       end
     end
+
 
     def format_status(todos, todo)
       mod = sprintf "%#{max_length(todos, :modifier, todo)}s   ", todo.modifier
@@ -88,17 +98,20 @@ module IssueBeaver
       "#      #{mod}#{title} at #{file}:#{begin_line}#{updated_at}#{attrs}"
     end
 
+
     def _list_diff(todos)
       todos.each do |todo|
         puts format_diff(todos, todo)
       end
     end
 
+
     def _list_status(todos)
       todos.each do |todo|
         puts format_status(todos, todo)
       end
     end
+
 
     def todo_comments(config = config)
       @todo_comments ||=
@@ -107,6 +120,7 @@ module IssueBeaver
         repo(config).files(config['dir'])
         )
     end
+
 
     def github_issues(config = config)
       Models::GithubIssue.use_repository(Models::GithubIssueRepository.new(
@@ -117,17 +131,21 @@ module IssueBeaver
       Models::GithubIssue
     end
 
+
     def repo(config = config)
       @repo ||= Models::Git.new(config['dir'], config['github']['repo'])
     end
+
 
     def merger(a, b)
       @merger ||= Models::Merger.new(a, b)
     end
 
+
     def git_repo(config = config)
       repo = Grit::Repo.new(config['dir'])
     end
+
 
     def config
       @config ||=
@@ -142,6 +160,7 @@ module IssueBeaver
         config
       end
     end
+
 
     DEFAULT_CONFIG =
       {
