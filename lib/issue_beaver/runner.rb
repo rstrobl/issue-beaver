@@ -125,15 +125,15 @@ module IssueBeaver
     def github_issues(config = config)
       Models::GithubIssue.use_repository(Models::GithubIssueRepository.new(
         repo(config).slug,
-        config['github']['login'],
-        config['github']['password'],
-        {:labels => config['github']['labels']})) 
+        repo(config).github_user,
+        nil,
+        {:labels => repo(config).labels})) 
       Models::GithubIssue
     end
 
 
     def repo(config = config)
-      @repo ||= Models::Git.new(config['dir'], config['github']['repo'])
+      @repo ||= Models::Git.new(config['dir'], nil)
     end
 
 
@@ -165,10 +165,6 @@ module IssueBeaver
     DEFAULT_CONFIG =
       {
         'dir' => '.',
-        'github' => {
-          'repo' => 'remote.origin',
-          'labels' => ['todo']
-        }
       }
 
   end

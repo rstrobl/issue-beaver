@@ -1,4 +1,4 @@
-$LOAD_PATH.unshift File.expand_path('../lib', __FILE__)
+$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 
 require 'enumerable/merge'
 require 'issue_beaver/shared'

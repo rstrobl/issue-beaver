@@ -7,10 +7,24 @@ module IssueBeaver
       def initialize(dir, repo_name)
         @root_dir = discover_root_dir(dir)
         @git = Grit::Repo.new(@root_dir)
-        @slug = discover_github_repo(repo_name)
+        @repo_name = repo_name || @git.config['issuebeaver.repository'] || 'remote.origin'
       end
 
-      attr_reader :slug, :root_dir
+      attr_reader :root_dir
+
+
+      def slug
+        @slug ||= discover_github_repo(@repo_name)
+      end
+
+
+      def github_user
+        @github_user ||= @git.config['github.user']
+      end
+
+      def labels
+        @labels ||= @git.config['issuebeaver.labels'] || ""
+      end
 
 
       def discover_github_repo(repo_name)
@@ -42,7 +56,7 @@ module IssueBeaver
         end
         return nil
       end
-      
+
     end
   end
 end
