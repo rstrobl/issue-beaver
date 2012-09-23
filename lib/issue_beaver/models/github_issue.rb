@@ -14,6 +14,9 @@ module IssueBeaver
       end
 
 
+      def self.repo_name() @repository.repo end
+
+
       def self.all
         Shared::ModelCollection.new(self, @repository.all.map{|attrs| new_from_github(attrs.dup)})
       end
@@ -74,7 +77,10 @@ module IssueBeaver
 
       def clean_attributes_from_todo
         basename = File.basename(self.file)
-        self.title = "#{self.title} (#{basename}:#{self.begin_line})"
+        self.title ||= ""
+        self.title = "#{self.title.capitalize} (#{basename}:#{self.begin_line})"
+        github_line_url = "https://github.com/#{self.class.repo_name}/blob/master/#{self.file}\#L#{self.begin_line}"
+        self.body = %Q{#{self.body}\n\n#{github_line_url}}
         @changed_attributes = nil
       end
 

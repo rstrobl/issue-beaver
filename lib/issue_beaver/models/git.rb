@@ -23,7 +23,7 @@ module IssueBeaver
       end
 
       def labels
-        @labels ||= @git.config['issuebeaver.labels'] || ""
+        @labels ||= (@git.config['issuebeaver.labels'] || "").split(',')
       end
 
 

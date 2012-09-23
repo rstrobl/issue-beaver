@@ -14,7 +14,7 @@ module IssueBeaver
         @default_attributes = Hashie::Mash.new(default_attributes)
       end
 
-      attr_reader :default_attributes
+      attr_reader :default_attributes, :repo
 
 
       def all
@@ -53,8 +53,9 @@ module IssueBeaver
       def sync_cache
         new_attrs = begin
           yield
-        rescue Octokit::UnprocessableEntity => each
+        rescue Octokit::UnprocessableEntity => e
           puts "Failed to save issue (Check if there are invalid assignees or labels)"
+          puts e
           return nil
         end
         @local_issues << new_attrs
